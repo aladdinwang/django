@@ -49,6 +49,8 @@ def get_flatpage(context, url):
     if not url.startswith('/'):
         url = '/' + url
     f = None
+    flatpage_tag = "{% get_flatpage \"" + \
+        url + "\" %}"
     try:
         f = get_object_or_404(FlatPage, url__exact=url)
     except Http404:
@@ -56,10 +58,18 @@ def get_flatpage(context, url):
         msg += ": "
         msg += url
         return {'error': msg}
+    if context.get('template', None) and not ("/pages/photography/loadtags/" == url):
+        f.content = mark_safe(flatpage_tag)
+    else:
+        if context.get('design', None):
+            f.content = mark_safe(f.snippet)
+        else:
+            f.content = mark_safe(f.content)
+    
     f.content = mark_safe(f.content)
     f.snippet = mark_safe(f.snippet)
     f.title = mark_safe(f.title)
-    render_context = {'flatpage': f, 'snippet': context.get('design', None), }
+    render_context = {'flatpage': f }
     return render_context
 
 
